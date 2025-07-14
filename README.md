@@ -1,9 +1,9 @@
-# Globus Compute GitHub Action
+# CORRECT
 
-[![GitHub Super-Linter](https://github.com/ValHayot/globus-compute-github-action/actions/workflows/linter.yml/badge.svg)](https://github.com/ValHayot/globus-compute-github-action/actions/workflows/linter.yml)
-[![CI](https://github.com/ValHayot/globus-compute-github-action/actions/workflows/ci.yml/badge.svg)](https://github.com/ValHayot/globus-compute-github-action/actions/workflows/ci.yml)
-[![Check dist/](https://github.com/ValHayot/globus-compute-github-action/actions/workflows/check-dist.yml/badge.svg)](https://github.com/ValHayot/globus-compute-github-action/actions/workflows/check-dist.yml)
-[![CodeQL](https://github.com/ValHayot/globus-compute-github-action/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/ValHayot/globus-compute-github-action/actions/workflows/codeql-analysis.yml)
+[![GitHub Super-Linter](https://github.com/globus-labs/correct/actions/workflows/linter.yml/badge.svg)](https://github.com/globus-labs/correct/actions/workflows/linter.yml)
+[![CI](https://github.com/globus-labs/correct/actions/workflows/ci.yml/badge.svg)](https://github.com/globus-labs/correct/actions/workflows/ci.yml)
+[![Check dist/](https://github.com/globus-labs/correct/actions/workflows/check-dist.yml/badge.svg)](https://github.com/globus-labs/correct/actions/workflows/check-dist.yml)
+[![CodeQL](https://github.com/globus-labs/correct/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/globus-labs/correct/actions/workflows/codeql-analysis.yml)
 [![Coverage](./badges/coverage.svg)](./badges/coverage.svg)
 
 > [!WARNING]
@@ -12,8 +12,8 @@
 
 ## Introduction
 
-This action aims to allow users to execute their jobs (and by extension, CI
-flows) on
+This COntinuous Reproducibility with a Remote Execution Tool (CORRECT) action
+aims to allow users to execute their jobs (and by extension, CI flows) on
 [Globus Compute](https://globus-compute.readthedocs.io/en/stable/sdk.html)
 Endpoints within their GitHub Action workflows.
 
@@ -28,10 +28,12 @@ configured to use a `GLOBUS_COMPUTE_CLIENT_ID` and
 
 Using the action in a workflow can be done by adding the following step.
 
+With a pre-registered function
+
 ```yaml
 - name: Run task on Globus Compute Endpoint
   id: gc-action
-  uses: valhayot/globus-compute-github-action@v1
+  uses: globus-labs/correct@v1
   with:
     client_id: ${{ secret.GLOBUS_COMPUTE_CLIENT_ID }}
     client_secret: ${{ secret.GLOBUS_COMPUTE_CLIENT_SECRET }}
@@ -41,12 +43,25 @@ Using the action in a workflow can be done by adding the following step.
     kwargs: <Dictionary of keyword arguments>
 ```
 
+With a shell command
+
+```yaml
+- name: Run task on Globus Compute Endpoint
+  id: gc-action
+  uses: globus-labs/correct@v1
+  with:
+    client_id: ${{ secret.GLOBUS_COMPUTE_CLIENT_ID }}
+    client_secret: ${{ secret.GLOBUS_COMPUTE_CLIENT_SECRET }}
+    endpoint_uuid: <Globus Compute Endpoint UUID>
+    shell_cmd: '<shell command to run on remote resources>'
+```
+
 ### Example
 
 ```yaml
 - name: Run GC Action
   id: gc-action
-  uses: valhayot/globus-compute-github-action@v1
+  uses: globus-labs/correct@v1
   with:
     client_id: ${{ secrets.GLOBUS_COMPUTE_CLIENT_ID }}
     client_secret: ${{ secrets.GLOBUS_COMPUTE_CLIENT_SECRET }}
@@ -54,6 +69,17 @@ Using the action in a workflow can be done by adding the following step.
     function_uuid: '02ea7614-be2e-4df0-9d23-643b6d8a6499'
     args: '[]'
     kwargs: '{"inpt": "test"}'
+```
+
+```yaml
+- name: Run GC Action
+  id: gc-action
+  uses: globus-labs/correct@v1
+  with:
+    client_id: ${{ secrets.GLOBUS_COMPUTE_CLIENT_ID }}
+    client_secret: ${{ secrets.GLOBUS_COMPUTE_CLIENT_SECRET }}
+    endpoint_uuid: 'f8e95115-0d66-41fe-88d8-ecf8c3bf59fd'
+    shell_cmd: 'pytest'
 ```
 
 ### Obtaining task execution outputs
@@ -65,7 +91,7 @@ follows:
 ```yaml
 - name: Run GC Action
   id: gc-action
-  uses: valhayot/globus-compute-github-action@v1
+  uses: globus-labs/correct@v1
   with:
     client_id: ${{ secrets.GLOBUS_COMPUTE_CLIENT_ID }}
     client_secret: ${{ secrets.GLOBUS_COMPUTE_CLIENT_SECRET }}

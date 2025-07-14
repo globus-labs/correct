@@ -1,5 +1,5 @@
-name: 'Globus Compute Action'
-description: 'Execute function on endpoint with provided task inputs.'
+name: 'CORRECT action'
+description: 'Execute function on a Globus Compute Endpoint.'
 inputs:
   client_id:
     description: Globus Client ID to use
@@ -55,3 +55,6 @@ outputs:
 runs:
   using: 'node20'
   main: 'dist/index.js'
+branding:
+  icon: 'check-circle'
+  color: 'purple'
