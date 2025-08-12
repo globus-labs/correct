@@ -1,7 +1,7 @@
 {
   "name": "typescript-action",
   "description": "GitHub Actions TypeScript template",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "author": "Valerie Hayot-Sasson",
   "type": "module",
   "private": true,
