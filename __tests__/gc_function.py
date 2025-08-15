@@ -1,3 +1,5 @@
+# pylint: skip-file
+"""Registered passthrough function used in CI."""
 from globus_compute_sdk import Client
 from globus_compute_sdk.serialize import JSONData
 
