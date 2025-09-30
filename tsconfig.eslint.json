@@ -5,7 +5,7 @@
     "allowJs": true,
     "noEmit": true
   },
-  "exclude": ["dist", "node_modules"],
+  "exclude": ["dist", "node_modules", "site"],
   "include": [
     "__fixtures__",
     "__tests__",

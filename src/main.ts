@@ -75,10 +75,11 @@ export async function run(): Promise<void> {
     // const tmp_repodir = `${tmp_workdir}/${repo.repo}`
 
     const url = `${github.context.serverUrl}/${repo.owner}/${repo.repo}`
+
     console.log(`Cloning repo ${url}`)
     const cmd = `if [ -d ${tmp_workdir} ]; then rm -r ${tmp_workdir}; fi && mkdir ${tmp_workdir} && cd ${tmp_workdir} && git clone ${url} && cd ${repo.repo} && git checkout ${branch}`
+
     console.log('Registering function')
-    console.log(`${CLIENT_ID} ${CLIENT_SECRET}`)
     const clone_reg = await register_function(access_token, cmd)
     const clone_uuid = clone_reg.function_uuid
 
