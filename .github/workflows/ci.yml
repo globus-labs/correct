@@ -74,4 +74,5 @@ jobs:
         id: output
         run: echo "${STEPS_TEST_ACTION_OUTPUTS_RESPONSE}"
         env:
-          STEPS_TEST_ACTION_OUTPUTS_RESPONSE: ${{ steps.test-action.outputs.response }}
+          STEPS_TEST_ACTION_OUTPUTS_RESPONSE:
+            ${{ steps.test-action.outputs.response }}
