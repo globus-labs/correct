@@ -11,6 +11,7 @@ import { execSync } from 'child_process'
 import { Cache } from './cache.js'
 import * as path from 'path'
 import fs from 'fs'
+import { stdout } from 'process'
 
 /**
  * The main function for the action.
@@ -103,93 +104,98 @@ export async function run(): Promise<void> {
       throw Error(clone_res.exception)
     } else {
       // write output to file and deserialize
-      const serialized_out = 'serialized_clone.out'
-      fs.writeFileSync(serialized_out, clone_res.result)
+      // const serialized_out = 'serialized_clone.out'
+      // fs.writeFileSync(serialized_out, clone_res.result)
 
-      const clone_output = execSync(
-        `python -c 'import globus_compute_sdk; import json;` +
-          ` f = open("${serialized_out}", "r");` +
-          ` serialized_data = f.read();` +
-          ` f.close();` +
-          ` data = globus_compute_sdk.serialize.concretes.DillDataBase64().deserialize(f"{serialized_data}");` +
-          ` print(json.dumps({"stdout": data.stdout, "stderr": data.stderr, "cmd": data.cmd, "returncode": data.returncode})` +
-          ` if hasattr(data, "stdout") else json.dumps(data).replace("\\n", ""), end="")'`,
-        { encoding: 'utf-8' }
-      )
+      // const clone_output = execSync(
+      //   `python -c 'import globus_compute_sdk; import json;` +
+      //     ` f = open("${serialized_out}", "r");` +
+      //     ` serialized_data = f.read();` +
+      //     ` f.close();` +
+      //     ` data = globus_compute_sdk.serialize.concretes.DillDataBase64().deserialize(f"{serialized_data}");` +
+      //     ` print(json.dumps({"stdout": data.stdout, "stderr": data.stderr, "cmd": data.cmd, "returncode": data.returncode})` +
+      //     ` if hasattr(data, "stdout") else json.dumps(data).replace("\\n", ""), end="")'`,
+      //   { encoding: 'utf-8' }
+      // )
 
       try {
-        const clone_json = JSON.parse(clone_output)
+        const clone_json = JSON.parse(clone_res.result.replace('11\n', ''))
         console.log(clone_json.stdout)
         console.error(clone_json.stderr)
       } catch (e) {
         console.error(e)
-        console.log(clone_output)
+        console.log(clone_res.result)
       }
     }
 
     //const cmd = `mkdir gc-action-temp; cd gc-action-temp; git clone ${}`
 
-    if (shell_cmd.length !== 0) {
-      const reg_response = await register_function(access_token, shell_cmd)
-      function_uuid = reg_response.function_uuid
-    }
+    // vhs - octopus test
+    // if (shell_cmd.length !== 0) {
+    //   const reg_response = await register_function(access_token, shell_cmd)
+    //   function_uuid = reg_response.function_uuid
+    // }
 
     const output_stdout: string = `${function_uuid}-action_output.stdout`
-    const output_stderr: string = `${function_uuid}-action_output.stderr`
+    // // const output_stderr: string = `${function_uuid}-action_output.stderr`
 
-    const batch_res = await submit_tasks(
-      access_token,
-      endpoint_uuid,
-      endpoint_config,
-      resource_spec,
-      function_uuid,
-      args,
-      kwargs
-    )
+    // const batch_res = await submit_tasks(
+    //   access_token,
+    //   endpoint_uuid,
+    //   endpoint_config,
+    //   resource_spec,
+    //   function_uuid,
+    //   args,
+    //   kwargs
+    // )
 
-    const keys: string = Object.keys(batch_res.tasks)[0]
-    const task_uuid: string = batch_res.tasks[keys as keyof object][0]
-    const response = await check_status(access_token, task_uuid)
+    // const keys: string = Object.keys(batch_res.tasks)[0]
+    // const task_uuid: string = batch_res.tasks[keys as keyof object][0]
+    // const response = await check_status(access_token, task_uuid)
 
-    core.setOutput('stdout', output_stdout)
-    core.setOutput('stderr', output_stderr)
-    core.setOutput('response', response)
+    const data = execSync(`python src/pysrc/shellfunction.py "${shell_cmd}"`, {'encoding': 'utf-8', 'stdio': ['pipe', 'pipe', 'inherit']})
+    const output_json = JSON.parse(data)
 
-    if (response.status === 'success') {
-      const data = response.result
+    core.setOutput('stdout', output_json['stdout'])
+    // core.setOutput('stderr', output_stderr)
+    core.setOutput('response', output_json['returncode'])
 
-      // write script to file
-      const serialized_file = 'serialized_data.out'
-      fs.writeFileSync(serialized_file, data)
+    if (output_json['returncode'] === 0) {
+      // vhs - octopus test
+      // const data = JSON.parse(response.result.replace('11\n', ''))
 
-      const output = execSync(
-        `python -c 'import globus_compute_sdk; import json;` +
-          ` f = open("${serialized_file}", "r");` +
-          ` serialized_data = f.read();` +
-          ` f.close();` +
-          ` data = globus_compute_sdk.serialize.concretes.DillDataBase64().deserialize(f"{serialized_data}");` +
-          ` print(json.dumps({"stdout": data.stdout, "stderr": data.stderr, "cmd": data.cmd, "returncode": data.returncode})` +
-          ` if hasattr(data, "stdout") else json.dumps(data).replace("\\n", ""), end="")'`,
-        { encoding: 'utf-8' }
-      )
+      // // // write script to file
+      // // const serialized_file = 'serialized_data.out'
+      // // fs.writeFileSync(serialized_file, data)
 
-      core.setOutput('result', output)
+      // // const output = execSync(
+      // //   `python -c 'import globus_compute_sdk; import json;` +
+      // //     ` f = open("${serialized_file}", "r");` +
+      // //     ` serialized_data = f.read();` +
+      // //     ` f.close();` +
+      // //     ` data = globus_compute_sdk.serialize.concretes.DillDataBase64().deserialize(f"{serialized_data}");` +
+      // //     ` print(json.dumps({"stdout": data.stdout, "stderr": data.stderr, "cmd": data.cmd, "returncode": data.returncode})` +
+      // //     ` if hasattr(data, "stdout") else json.dumps(data).replace("\\n", ""), end="")'`,
+      // //   { encoding: 'utf-8' }
+      // // )
 
-      const output_json = JSON.parse(output)
+      core.setOutput('result', output_json)
 
-      if ('stdout' in output_json) {
+      if (output_json instanceof Object && 'stdout' in output_json) {
         if ('returncode' in output_json && output_json['returncode'] != 0) {
           fs.writeFileSync(output_stdout, output_json['stdout'])
-          fs.writeFileSync(output_stderr, output_json['stderr'])
-          throw Error(output_json['stdout'] + '\n' + output_json['stderr'])
+          // fs.writeFileSync(output_stderr, output_json['stderr'])
+          const stdout = output_json['stdout'].split('\n');
+
+          throw Error(stdout[stdout.length-1]) // + '\n' + output_json['stderr'])
         }
-        console.log(output_json['stdout'])
+        //console.log(output_json['stdout'])
         fs.writeFileSync(output_stdout, output_json['stdout'])
-        fs.writeFileSync(output_stderr, output_json['stderr'])
+        // fs.writeFileSync(output_stderr, output_json['stderr'])
       } else {
         console.error(output_json)
-        fs.writeFileSync(output_stdout, '\n')
-        fs.writeFileSync(output_stderr, output)
+        //fs.writeFileSync(output_stdout, '\n')
+        // fs.writeFileSync(output_stderr, data)
       }
     } else {
       core.setOutput('result', '')

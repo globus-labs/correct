@@ -69,7 +69,7 @@ export function register_function(
 ): Promise<RegisterResponse> {
   const serialized_body = execSync(
     `python -c 'import json; import sys; import globus_compute_sdk;` +
-      ` data = globus_compute_sdk.serialize.concretes.CombinedCode().serialize(globus_compute_sdk.sdk.shell_function.ShellFunction("${shell_cmd}", snippet_lines=50000));` +
+      ` data = globus_compute_sdk.serialize.concretes.CombinedCode().serialize(globus_compute_sdk.sdk.shell_function.ShellFunction("${shell_cmd}", snippet_lines=50000, return_dict=True));` +
       ` print(json.dumps({"function_name": "ci_shell_cmd", "function_code": f"{len(data)}\\n{data}", "meta":` +
       ` { "python_version":  ".".join(str(v) for v in sys.version_info[0:3]),` +
       ` "sdk_version": globus_compute_sdk.__version__, "serde_identifier": "10"}}))'`,
@@ -151,6 +151,7 @@ export function submit_tasks(
   }
 
   body['user_endpoint_config'] = user_endpoint_config
+  body['result_serializers'] = ['globus_compute_sdk.serialize.JSONData']
 
   if (Object.keys(resource_specification).length !== 0) {
     body['resource_specification'] = resource_specification

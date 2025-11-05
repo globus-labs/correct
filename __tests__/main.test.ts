@@ -154,13 +154,22 @@ describe('main.ts', () => {
   })
 
   it('Test registration of shell cmd', async () => {
-    const reg_result = JSON.stringify({
-      python_version: '1.2.3',
-      sdk_version: '123',
-      serde_identifier: '10'
-    })
-    cp.execSync.mockReturnValueOnce(reg_result)
-    cp.execSync.mockReturnValueOnce(reg_result) // execSync called twice
+    const reg_result: TaskStatusResponse = {
+      task_id: 't1',
+      status: 'success',
+      result: JSON.stringify({
+        python_version: '1.2.3',
+        sdk_version: '123',
+        serde_identifier: '10'
+      }),
+      completion_t: '1',
+      exception: 'ex',
+      details: {}
+    }
+    //cp.execSync.mockReturnValueOnce(reg_result)
+    //cp.execSync.mockReturnValueOnce(reg_result) // execSync called twice
+    gcf.check_status.mockReset()
+    gcf.check_status.mockImplementation(() => Promise.resolve(reg_result))
     core.getInput.mockReset()
     core.getInput.mockImplementation(function (name: string): string {
       if (name === 'client_id') {
@@ -182,12 +191,16 @@ describe('main.ts', () => {
       }
     })
     await run()
-    expect(core.setOutput).toHaveBeenCalledWith('response', output)
-    expect(core.setOutput).toHaveBeenCalledWith('result', reg_result)
+    expect(core.setOutput).toHaveBeenCalledWith('response', reg_result)
+    expect(core.setOutput).toHaveBeenCalledWith('result', reg_result.result)
   })
 
   it('Add coverage for JSON output types', async () => {
     let result = JSON.stringify({ stdout: 'stdout', stderr: 'stderr' })
+    output.result = result
+
+    gcf.check_status.mockReset()
+    gcf.check_status.mockImplementation(() => Promise.resolve(output))
     cp.execSync.mockReset()
     cp.execSync.mockReturnValue(result)
     await run()
@@ -209,6 +222,11 @@ describe('main.ts', () => {
       returncode: 2
     }
     const result = JSON.stringify(result_dict)
+    output.result = result
+
+    gcf.check_status.mockReset()
+    gcf.check_status.mockImplementation(() => Promise.resolve(output))
+
     cp.execSync.mockReset()
     cp.execSync.mockReturnValue(result)
     await run()
