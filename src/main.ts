@@ -11,7 +11,6 @@ import { execSync } from 'child_process'
 import { Cache } from './cache.js'
 import * as path from 'path'
 import fs from 'fs'
-import { stdout } from 'process'
 
 /**
  * The main function for the action.
@@ -77,8 +76,14 @@ export async function run(): Promise<void> {
 
     const url = `${github.context.serverUrl}/${repo.owner}/${repo.repo}`
 
-    console.log(`Cloning repo ${url}`)
-    const cmd = `if [ -d ${tmp_workdir} ]; then rm -r ${tmp_workdir}; fi && mkdir ${tmp_workdir} && cd ${tmp_workdir} && git clone ${url} && cd ${repo.repo} && git checkout ${branch}`
+    console.log(`Cloning repo ${url} and installing diaspora-event-sdk for real-time logging`)
+    const cmd = `if [ -d ${tmp_workdir} ];` +
+    `then rm -rf ${tmp_workdir}; fi && mkdir ${tmp_workdir} && ` +
+    `cd ${tmp_workdir} && git clone ${url} && cd ${repo.repo} && ` +
+    `git checkout ${branch} && ` +
+    "if [ $(pip freeze | grep diaspora-event-sdk | wc -l ) -eq 0 ]; " +
+    "then pip install diaspora-event-sdk[kafka-python]; fi " +
+    "&& touch completed.out"
 
     console.log('Registering function')
     const clone_reg = await register_function(access_token, cmd)
@@ -153,7 +158,9 @@ export async function run(): Promise<void> {
     // const task_uuid: string = batch_res.tasks[keys as keyof object][0]
     // const response = await check_status(access_token, task_uuid)
 
-    const data = execSync(`python src/pysrc/shellfunction.py "${shell_cmd}"`, {'encoding': 'utf-8', 'stdio': ['pipe', 'pipe', 'inherit']})
+    const data = execSync(
+      `python src/pysrc/shellfunction.py ${endpoint_uuid} "${shell_cmd}" ${JSON.stringify(user_endpoint_config)}`,
+      {'encoding': 'utf-8', 'stdio': ['pipe', 'pipe', 'inherit']})
     const output_json = JSON.parse(data)
 
     core.setOutput('stdout', output_json['stdout'])
@@ -194,7 +201,7 @@ export async function run(): Promise<void> {
         // fs.writeFileSync(output_stderr, output_json['stderr'])
       } else {
         console.error(output_json)
-        //fs.writeFileSync(output_stdout, '\n')
+        fs.writeFileSync(output_stdout, '\n')
         // fs.writeFileSync(output_stderr, data)
       }
     } else {
