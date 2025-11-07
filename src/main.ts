@@ -69,7 +69,12 @@ export async function run(): Promise<void> {
     }
 
     // Clone git repo with GC function
-    const branch = github.context.ref
+    let branch = github.context.ref
+
+    if (branch.startsWith('refs/heads/')) {
+      branch = branch.substring('refs/heads/'.length);
+    }
+
     const repo = github.context.repo
     const tmp_workdir = 'gc-action-temp'
     // const tmp_repodir = `${tmp_workdir}/${repo.repo}`
