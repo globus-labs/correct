@@ -72,7 +72,7 @@ export async function run(): Promise<void> {
     let branch = github.context.ref
 
     if (github.context.ref.startsWith('refs/heads/')) {
-      branch = github.context.ref.substring('refs/heads/'.length);
+      branch = github.context.ref.substring('refs/heads/'.length)
     } else {
       branch = github.context.ref
     }
@@ -84,16 +84,19 @@ export async function run(): Promise<void> {
 
     const url = `${github.context.serverUrl}/${repo.owner}/${repo.repo}`
 
-    console.log(`Cloning repo ${url} and installing diaspora-event-sdk for real-time logging and proxystore for data extraction`)
-    const cmd = `if [ -d ${tmp_workdir} ];` +
-    `then rm -rf ${tmp_workdir}; fi && mkdir ${tmp_workdir} && ` +
-    `cd ${tmp_workdir} && git clone ${url} && cd ${repo.repo} && ` +
-    `git checkout ${branch} && ` +
-    "if [ $(pip freeze | grep diaspora-event-sdk | wc -l ) -eq 0 ]; " +
-    "then pip install diaspora-event-sdk[kafka-python]; fi && " +
-    "if [ $(pip freeze | grep proxystore | wc -l ) -eq 0 ]; " +
-    "then pip install proxystore[endpoints]; fi " +
-    "&& touch completed.out"
+    console.log(
+      `Cloning repo ${url} and installing diaspora-event-sdk for real-time logging and proxystore for data extraction`
+    )
+    const cmd =
+      `if [ -d ${tmp_workdir} ];` +
+      `then rm -rf ${tmp_workdir}; fi && mkdir ${tmp_workdir} && ` +
+      `cd ${tmp_workdir} && git clone ${url} && cd ${repo.repo} && ` +
+      `git checkout ${branch} && ` +
+      'if [ $(pip freeze | grep diaspora-event-sdk | wc -l ) -eq 0 ]; ' +
+      'then pip install diaspora-event-sdk[kafka-python]; fi && ' +
+      'if [ $(pip freeze | grep proxystore | wc -l ) -eq 0 ]; ' +
+      'then pip install proxystore[endpoints]; fi ' +
+      '&& touch completed.out'
 
     console.log('Registering function')
     const clone_reg = await register_function(access_token, cmd)
@@ -170,7 +173,8 @@ export async function run(): Promise<void> {
 
     const data = execSync(
       `python src/pysrc/shellfunction.py ${endpoint_uuid} "${shell_cmd}" ${JSON.stringify(user_endpoint_config)}`,
-      {'encoding': 'utf-8', 'stdio': ['pipe', 'pipe', 'inherit']})
+      { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'inherit'] }
+    )
     const output_json = JSON.parse(data)
 
     core.setOutput('stdout', output_json['stdout'])
@@ -202,9 +206,9 @@ export async function run(): Promise<void> {
         if ('returncode' in output_json && output_json['returncode'] != 0) {
           fs.writeFileSync(output_stdout, output_json['stdout'])
           // fs.writeFileSync(output_stderr, output_json['stderr'])
-          const stdout = output_json['stdout'].split('\n');
+          const stdout = output_json['stdout'].split('\n')
 
-          throw Error(stdout[stdout.length-1]) // + '\n' + output_json['stderr'])
+          throw Error(stdout[stdout.length - 1]) // + '\n' + output_json['stderr'])
         }
         //console.log(output_json['stdout'])
         fs.writeFileSync(output_stdout, output_json['stdout'])
