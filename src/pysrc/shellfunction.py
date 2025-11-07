@@ -288,8 +288,8 @@ def main():
     cmd = sys.argv[2]
     endpoint_config = json.loads(sys.argv[3])
 
-    client_id = os.getenv("client_id")
-    client_secret = os.getenv("client_secret")
+    client_id = os.getenv("secrets.GLOBUS_CLI_CLIENT_ID")
+    client_secret = os.getenv("secrets.GLOBUS_CLI_CLIENT_SECRET")
 
     print(f"Running command: {cmd}", file=sys.stderr)
 
