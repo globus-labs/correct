@@ -76,13 +76,15 @@ export async function run(): Promise<void> {
 
     const url = `${github.context.serverUrl}/${repo.owner}/${repo.repo}`
 
-    console.log(`Cloning repo ${url} and installing diaspora-event-sdk for real-time logging`)
+    console.log(`Cloning repo ${url} and installing diaspora-event-sdk for real-time logging and proxystore for data extraction`)
     const cmd = `if [ -d ${tmp_workdir} ];` +
     `then rm -rf ${tmp_workdir}; fi && mkdir ${tmp_workdir} && ` +
     `cd ${tmp_workdir} && git clone ${url} && cd ${repo.repo} && ` +
     `git checkout ${branch} && ` +
     "if [ $(pip freeze | grep diaspora-event-sdk | wc -l ) -eq 0 ]; " +
-    "then pip install diaspora-event-sdk[kafka-python]; fi " +
+    "then pip install diaspora-event-sdk[kafka-python]; fi && " +
+    "if [ $(pip freeze | grep proxystore | wc -l ) -eq 0 ]; " +
+    "then pip install proxystore[endpoints]; fi " +
     "&& touch completed.out"
 
     console.log('Registering function')

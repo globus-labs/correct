@@ -66,10 +66,13 @@ jobs:
         with:
           client_id: ${{ secrets.GLOBUS_CLI_CLIENT_ID }}
           client_secret: ${{ secrets.GLOBUS_CLI_CLIENT_SECRET }}
-          endpoint_uuid: '4b116d3c-1703-4f8f-9f6f-39921e5864df'
-          function_uuid: 'd0031aba-5f41-4cc4-9d12-cb980ef10cd5'
+          endpoint_uuid: '226f1d4a-fa6a-4673-8a59-f1ab6d3c9a86' #'4b116d3c-1703-4f8f-9f6f-39921e5864df'
+          shell_cmd: "echo test1; sleep 3; echo test2; sleep 2; echo test3;"
+          user_endpoint_config: '{"CONTAINERIZED": true, "container_type": "docker", "container_uri": "ghcr.io/valhayot/kamping-reproducibility:main", "WORKING_DIR": "/home/cc", "container_cmd_options": "-v /home/cc/:/home/cc"}'
+          clone_endpoint_config: '{ "CONTAINERIZED": true, "container_type": "docker", "container_uri": "ghcr.io/valhayot/kamping-reproducibility:main", "WORKING_DIR": "/home/cc", "container_cmd_options": "-v /home/cc/:/home/cc" }'
+          # function_uuid: 'd0031aba-5f41-4cc4-9d12-cb980ef10cd5'
           args: '[]'
-          kwargs: '{"inpt": "test"}'
+          kwargs: '{}' #{"inpt": "test"}'
       - name: Print Output
         id: output
         run: echo "${STEPS_TEST_ACTION_OUTPUTS_RESPONSE}"

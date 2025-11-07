@@ -4,11 +4,11 @@ on:
   pull_request:
     branches:
       - main
-  push:
-    branches:
-      - main
-  schedule:
-    - cron: '31 7 * * 3'
+  # push:
+  #   branches:
+  #     - main
+  # schedule:
+  #   - cron: '31 7 * * 3'
 
 permissions:
   actions: read

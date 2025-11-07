@@ -1,5 +1,6 @@
 import json
 import os
+import subprocess
 import sys
 import typing as t
 
@@ -15,8 +16,21 @@ from globus_compute_sdk import Executor
 from globus_compute_sdk.sdk.shell_function import ShellFunction
 
 
-def octopus_setup(client_id: str, client_secret: str) -> t.Tuple[str, str, str]:
+def run_cmd(cmd: list[str]) -> str:
+    p = subprocess.Popen(
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8"
+    )
+    out, _ = p.communicate()
 
+    if p.returncode != 0:
+        raise Exception(out)
+
+    return out
+
+
+def setup(client_id: str, client_secret: str) -> t.Tuple[str, str, str]:
+
+    ## create topic
     os.environ["DIASPORA_SDK_CLIENT_ID"] = client_id
     os.environ["DIASPORA_SDK_CLIENT_SECRET"] = client_secret
     c = GlobusClient()
@@ -25,8 +39,39 @@ def octopus_setup(client_id: str, client_secret: str) -> t.Tuple[str, str, str]:
     topic = "topic" + c.subject_openid[-12:] + "1"
     c.register_topic(topic=topic)
     sleep(5)
+
+    # setup proxystore
+    os.environ["PROXYSTORE_GLOBUS_CLIENT_ID"] = client_id
+    os.environ["PROXYSTORE_GLOBUS_CLIENT_SECRET"] = client_secret
+
+    ep_name = "correct"
+    tool = "proxystore-endpoint"
+
+    # check if ep exists
+    out = run_cmd([tool, "list"])
+    ep_status = [line for line in out.split("\n") if ep_name in line]
+    running = False
+    ep_id = None
+
+    if len(ep_status) == 1:
+        # check if running
+        if "RUNNING" in ep_status[0]:
+            ep_id = ep_status[0].split(" ")[-1]
+            running = True
+    else:
+        run_cmd([tool, "configure", ep_name])
+
+    if not running:
+        run_cmd([tool, "start", ep_name])
+
+    if ep_id is None:
+        out = run_cmd([tool, "list"])
+        ep_id = [line.split(" ")[-1] for line in out.split("\n") if ep_name in line][0]
+
+    print(f"EP ID: {ep_id}", file=sys.stderr)
+
     # c.register_topic(topic=topic)
-    return topic, str(uuid4()), octo_dict
+    return topic, str(uuid4()), octo_dict, ep_id
 
 
 class OctopusShellFunction(ShellFunction):
@@ -39,6 +84,7 @@ class OctopusShellFunction(ShellFunction):
         octo_dict,
         topic,
         run_uuid,
+        endpoint=None,
         stdout=None,
         stderr=None,
         walltime=None,
@@ -59,8 +105,58 @@ class OctopusShellFunction(ShellFunction):
         self.client_secret = os.getenv("GLOBUS_COMPUTE_CLIENT_SECRET")
         self.topic = topic
         self.uuid = run_uuid
+        self.ps_ep = endpoint
+
+    @staticmethod
+    def run_cmd(cmd: list[str]) -> str:
+        import subprocess
+        import sys
+
+        p = subprocess.Popen(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8"
+        )
+        out, _ = p.communicate()
+
+        if p.returncode != 0:
+            raise Exception(out)
+
+        return out
+
+    @classmethod
+    def configure_proxystore(cls) -> str:
+        import sys
+
+        ep_name = "correct"
+        tool = "proxystore-endpoint"
+
+        # check if ep exists
+        out = cls.run_cmd([tool, "list"])
+        ep_status = [line for line in out.split("\n") if ep_name in line]
+        running = False
+        ep_id = None
+
+        if len(ep_status) == 1:
+            # check if running
+            if "RUNNING" in ep_status[0]:
+                ep_id = ep_status[0].split(" ")[-1]
+                running = True
+        else:
+            cls.run_cmd([tool, "configure", ep_name])
+
+        if not running:
+            cls.run_cmd([tool, "start", ep_name])
+
+        if ep_id is None:
+            out = cls.run_cmd([tool, "list"])
+            ep_id = [
+                line.split(" ")[-1] for line in out.split("\n") if ep_name in line
+            ][0]
+
+        print(f"EP ID: {ep_id}", file=sys.stderr)
+        return ep_id
 
     def execute_cmd_line(self, cmd: str) -> t.Union[ShellResult, dict]:
+        import json
         import os
         import subprocess
         import tempfile
@@ -79,6 +175,10 @@ class OctopusShellFunction(ShellFunction):
         os.environ["OCTOPUS_AWS_ACCESS_KEY_ID"] = self.access_key
         os.environ["OCTOPUS_AWS_SECRET_ACCESS_KEY"] = self.secret_key
         os.environ["OCTOPUS_BOOTSTRAP_SERVERS"] = self.endpoint
+        # setup proxystore
+        os.environ["PROXYSTORE_GLOBUS_CLIENT_ID"] = self.client_id
+        os.environ["PROXYSTORE_GLOBUS_CLIENT_SECRET"] = self.client_secret
+        ep_id = self.configure_proxystore()
 
         # c = GlobusClient()
         # c.retrieve_key()
@@ -162,6 +262,14 @@ class OctopusShellFunction(ShellFunction):
                 std_out, std_err
             )
 
+        from proxystore.connectors.endpoint import EndpointConnector
+        from proxystore.store import Store
+
+        connector = EndpointConnector(endpoints=[self.ps_ep, ep_id])
+        with Store(name="default", connector=connector) as store:
+            k = store.put(b"hello from proxystore")
+            stderr_snippet = json.dumps(k._asdict())
+
         result = {
             "cmd": cmd,
             "stdout": stdout_snippet,
@@ -169,6 +277,7 @@ class OctopusShellFunction(ShellFunction):
             "returncode": returncode,
             "exception_name": exception_name,
         }
+
         if self.return_dict:
             return result
         return ShellResult(**result)  # type: ignore[arg-type]
@@ -184,7 +293,7 @@ def main():
 
     print(f"Running command: {cmd}", file=sys.stderr)
 
-    topic, run_uuid, octo_dict = octopus_setup(
+    topic, run_uuid, octo_dict, ep_id = setup(
         client_id=client_id, client_secret=client_secret
     )
     bf = OctopusShellFunction(
@@ -192,6 +301,7 @@ def main():
         octo_dict,
         topic,
         run_uuid,
+        endpoint=ep_id,
         snippet_lines=100,
     )
 
@@ -215,12 +325,19 @@ def main():
                             if msg["message"] == "KafkaProducerEnd":
                                 break
                             print(msg["message"], end="", file=sys.stderr)
-        except Exception as e:
-            print("failes")
         finally:
             consumer.close()
 
         result = future.result()
+
+        from proxystore.connectors.endpoint import EndpointConnector
+        from proxystore.connectors.endpoint import EndpointKey
+        from proxystore.store import Store
+
+        connector = EndpointConnector(endpoints=[ep_id])
+        with Store(name="default", connector=connector) as store:
+            k = store.get(EndpointKey(**json.loads(result.stderr)))
+            print(k, file=sys.stderr)
         print(
             json.dumps({"returncode": result.returncode, "stdout": result.stdout}),
             flush=True,
