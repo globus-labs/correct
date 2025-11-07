@@ -34,6 +34,9 @@ export async function run(): Promise<void> {
       throw Error('CLIENT_ID or CLIENT_SECRET has not been specified')
     }
 
+    process.env.GLOBUS_COMPUTE_CLIENT_ID = CLIENT_ID
+    process.env.GLOBUS_COMPUTE_CLIENT_SECRET = CLIENT_SECRET
+
     if (clone_endpoint_config === '') {
       clone_endpoint_config = user_endpoint_config
     }
@@ -93,8 +96,7 @@ export async function run(): Promise<void> {
       'if [ $(pip freeze | grep diaspora-event-sdk | wc -l ) -eq 0 ]; ' +
       'then pip install diaspora-event-sdk[kafka-python]; fi && ' +
       'if [ $(pip freeze | grep proxystore | wc -l ) -eq 0 ]; ' +
-      'then pip install proxystore[endpoints]; fi ' +
-      '&& touch completed.out'
+      'then pip install proxystore[endpoints]; fi '
 
     console.log('Registering function')
     const clone_reg = await register_function(access_token, cmd)
