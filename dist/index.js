@@ -31530,7 +31530,8 @@ async function run() {
         const kwargs = coreExports.getInput('kwargs');
         // install globus-compute-sdk if not already installed
         execSync('gc_installed=$(pip freeze | grep globus-compute-sdk | wc -l) &&' +
-            ' if [ ${gc_installed} -lt 1 ]; then pip install globus-compute-sdk; fi;');
+            ' if [ ${gc_installed} -lt 1 ]; then pip install globus-compute-sdk; fi;' +
+            'pip install proxystore[endpoints] diaspora-event-sdk[kafka-python]');
         const cache = new Cache(path.resolve('./tmp'));
         let access_token = await cache.get('access-token');
         if ((await cache.get('access-token')) == null) {
