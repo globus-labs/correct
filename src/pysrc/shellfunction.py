@@ -334,9 +334,10 @@ def main():
         from proxystore.connectors.endpoint import EndpointKey
         from proxystore.store import Store
 
-        connector = EndpointConnector(endpoints=[ep_id])
+        remote_ep = EndpointKey(**json.loads(result.stderr))
+        connector = EndpointConnector(endpoints=[ep_id, remote_ep.endpoint_id])
         with Store(name="default", connector=connector) as store:
-            k = store.get(EndpointKey(**json.loads(result.stderr)))
+            k = store.get(remote_ep)
             print(k, file=sys.stderr)
         print(
             json.dumps({"returncode": result.returncode, "stdout": result.stdout}),
