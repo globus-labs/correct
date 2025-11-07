@@ -73,12 +73,12 @@ jobs:
             '{"CONTAINERIZED": true, "container_type": "docker",
             "container_uri": "ghcr.io/valhayot/kamping-reproducibility:main",
             "WORKING_DIR": "/home/cc", "container_cmd_options": "-v
-            /home/cc/:/home/cc"}'
+            /home/cc/:/home/cc --network=host"}'
           clone_endpoint_config:
             '{ "CONTAINERIZED": true, "container_type": "docker",
             "container_uri": "ghcr.io/valhayot/kamping-reproducibility:main",
             "WORKING_DIR": "/home/cc", "container_cmd_options": "-v
-            /home/cc/:/home/cc" }'
+            /home/cc/:/home/cc" --network=host}'
           # function_uuid: 'd0031aba-5f41-4cc4-9d12-cb980ef10cd5'
           args: '[]'
           kwargs: '{}' #{"inpt": "test"}'
