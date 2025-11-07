@@ -31545,13 +31545,9 @@ async function run() {
         }
         // Clone git repo with GC function
         let branch = githubExports.context.ref;
-        if (githubExports.context.ref.startsWith('refs/heads/')) {
-            branch = githubExports.context.ref.substring('refs/heads/'.length);
+        if (branch.startsWith('refs/heads/')) {
+            branch = branch.substring('refs/heads/'.length);
         }
-        else {
-            branch = githubExports.context.ref;
-        }
-        throw Error(branch);
         const repo = githubExports.context.repo;
         const tmp_workdir = 'gc-action-temp';
         // const tmp_repodir = `${tmp_workdir}/${repo.repo}`
