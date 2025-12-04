@@ -75,7 +75,7 @@ jobs:
           done 
           globus-compute-endpoint list
 
-          echo "endpoint=${output}" >> $GITHUB_OUTPUT
+          echo "endpoint=${output}" >> "$GITHUB_OUTPUT"
 
       - name: Test Local Action
         id: test-action
