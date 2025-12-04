@@ -60,13 +60,23 @@ jobs:
         with:
           python-version: '3.11.4'
           cache: 'pip'
+      - name: Start Globus Compute Endpoint
+        id: gce
+        run: |
+          pip install globus-compute-endpoint
+          export GLOBUS_COMPUTE_CLIENT_ID=${{ secrets.GLOBUS_CLI_CLIENT_ID}}
+          export GLOBUS_COMPUTE_CLIENT_SECRET=${{ secrets.GLOBUS_CLI_CLIENT_SECRET }}
+          globus-compute-endpoint configure --multi-user false test
+          globus-compute-endpoint start test &
+          globus-compute-endpoint list | grep test | grep -E -o '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}' > $GITHUB_OUTPUT
+
       - name: Test Local Action
         id: test-action
         uses: ./
         with:
           client_id: ${{ secrets.GLOBUS_CLI_CLIENT_ID }}
           client_secret: ${{ secrets.GLOBUS_CLI_CLIENT_SECRET }}
-          endpoint_uuid: '4b116d3c-1703-4f8f-9f6f-39921e5864df'
+          endpoint_uuid: ${{ steps.gce.outputs.* }}
           function_uuid: 'd0031aba-5f41-4cc4-9d12-cb980ef10cd5'
           args: '[]'
           kwargs: '{"inpt": "test"}'
