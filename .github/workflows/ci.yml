@@ -71,7 +71,6 @@ jobs:
           echo 'test test'
           echo ${output}
           echo "endpoint=${output}" >> $GITHUB_OUTPUTS
-          globus-compute-endpoint start test &
 
       - name: Test Local Action
         id: test-action
