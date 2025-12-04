@@ -71,7 +71,7 @@
     "ts-jest-resolver": "^2.0.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2",
-    "uuid": "^11.0.5"
+    "uuid": "^13.0.0"
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "*"
