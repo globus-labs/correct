@@ -69,8 +69,9 @@ jobs:
           globus-compute-endpoint configure --multi-user false test
           globus-compute-endpoint start test &
 
-          while [[ -z "$output" ]]; do
-            output=$(globus-compute-endpoint list | grep test | grep -E -o '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}')
+          output="None"
+          while [[ "$output" == "None" ]]; do
+            output=$(globus-compute-endpoint list | grep test | cut -d ' ' -f2)
           done 
           globus-compute-endpoint list
 
