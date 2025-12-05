@@ -6,7 +6,8 @@
     "moduleResolution": "NodeNext",
     "outDir": "./dist",
     "lib": ["es2022", "es2023", "es2024"],
-    "allowJs": false
+    "allowJs": false,
+    "isolatedModules": true
   },
   "exclude": [
     "__fixtures__",
