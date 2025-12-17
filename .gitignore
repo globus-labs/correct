@@ -100,3 +100,21 @@ __tests__/runner/*
 # IDE files
 .idea
 *.code-workspace
+
+# dist output
+dist/cache.d.ts
+dist/constants.d.ts
+dist/decay.d.ts
+dist/functions.d.ts
+dist/index.d.ts
+dist/index.js.map
+dist/interfaces.d.ts
+dist/main.d.ts
+dist/wait.d.ts
+
+# debug scripts
+gctext.py
+proxytest.py 
+
+# pyenv
+.python-version
