@@ -37,7 +37,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@actions/core": "^2.0.1",
+    "@actions/core": "^2.0.2",
     "@actions/github": "^6.0.1",
     "eslint": "^9.39.2",
     "file-system-cache": "^3.0.0-alpha.8",
