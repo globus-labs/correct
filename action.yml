@@ -30,7 +30,7 @@ inputs:
     default: '{}'
   function_uuid:
     description:
-      Function UUID to run on endpoint. Is overidden if shell_cmd is provided.
+      Function UUID to run on endpoint. Is overridden if shell_cmd is provided.
     required: false
     default: ''
   shell_cmd:
