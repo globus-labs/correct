@@ -1,5 +1,5 @@
-name: "CORRECT action"
-description: "Execute function on a Globus Compute Endpoint."
+name: 'CORRECT action'
+description: 'Execute function on a Globus Compute Endpoint.'
 inputs:
   client_id:
     description: Globus Client ID to use
@@ -15,7 +15,7 @@ inputs:
       Configuration values for endpoint that are described and allowed by
       endpoint administrators
     required: false
-    default: "{}"
+    default: '{}'
   clone_endpoint_config:
     description:
       Configuration values for endpoint that are described and allowed by
@@ -23,27 +23,28 @@ inputs:
       repo. If no value is provided, it will default to using the
       user_endpoint_config
     required: false
-    default: "{}"
+    default: '{}'
   resource_specification:
     description: Resource requirements for individual task execution
     required: false
-    default: "{}"
+    default: '{}'
   function_uuid:
-    description: Function UUID to run on endpoint. Is overridden if shell_cmd is provided.
+    description:
+      Function UUID to run on endpoint. Is overridden if shell_cmd is provided.
     required: false
-    default: ""
+    default: ''
   shell_cmd:
     description:
       Shell command to execute using Globus Compute. Takes priority over
       function_uuid and ignores any specified args and kwargs.
     required: false
-    default: ""
+    default: ''
   args:
     description: Task input args specified as list of arguments
-    default: "[]"
+    default: '[]'
   kwargs:
     description: Task input kwargs specified as a dictionary of kwargs
-    default: "{}"
+    default: '{}'
 outputs:
   response:
     description: Globus SDK HTTP response for task execution
@@ -52,8 +53,8 @@ outputs:
       Task execution result. Is empty unless response status indicates task
       succeeded
 runs:
-  using: "node20"
-  main: "dist/index.js"
+  using: 'node20'
+  main: 'dist/index.js'
 branding:
-  icon: "check-circle"
-  color: "purple"
+  icon: 'check-circle'
+  color: 'purple'
